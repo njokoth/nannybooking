@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Babysitting/Nannying Booking</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+  <div class="container">
+    <h1 class="mt-5">Babysitting/Nannying Booking</h1>
+
+    <div id="availabilityCard" class="card mt-3">
+      <div class="card-header">Availability Information</div>
+      <div class="card-body">
+        <ul id="availabilityList" class="list-group">
+          <!-- Availability data will be dynamically inserted here -->
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+function fetchAvailabilityData() {
+  fetch('http://localhost:3000/availability')
+    .then(response => response.json())
+    .then(data => {
+      const availabilityList = document.getElementById('availabilityList');
+      availabilityList.innerHTML = '';
+
+      // Sort availability data by date in ascending order
+      data.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      // Process the availability data and update the card
+      data.forEach(availability => {
+        const date = new Date(availability.date).toLocaleDateString();
+        const startTime = formatTime(availability.start_time);
+        const endTime = formatTime(availability.end_time);
+
+        // Create a list item for each availability entry
+        const listItem = document.createElement('li');
+        listItem.className = 'list-group-item';
+
+        // Check if the availability is booked
+        if (availability.booked) {
+          listItem.style.opacity = '0.5'; // Set opacity to make it grayed out
+        }
+
+        listItem.innerHTML = `<strong>Date:</strong> ${date}<br><strong>Time:</strong> ${startTime} - ${endTime}`;
+
+        // Create a button for booking
+        const bookButton = document.createElement('button');
+        bookButton.className = 'btn btn-primary';
+        bookButton.innerText = 'Book';
+
+        // Disable the book button if the availability is already booked
+        if (availability.booked) {
+          bookButton.disabled = true;
+        } else {
+          // Add event listener to the book button
+          bookButton.addEventListener('click', () => bookAvailability(availability.id));
+        }
+
+        // Append the book button to the list item
+        listItem.appendChild(bookButton);
+
+        // Append the list item to the availability list
+        availabilityList.appendChild(listItem);
+      });
+
+      // Show the availability card
+      document.getElementById('availabilityCard').style.display = 'block';
+    })
+    .catch(error => {
+      console.error('Error fetching availability data:', error);
+    });
+}
+
+    // Helper function to format time in HH:MM format
+    function formatTime(timeString) {
+      const [hours, minutes] = timeString.split(':');
+      return `${hours}:${minutes}`;
+    }
+
+    function bookAvailability(availabilityId) {
+      // Send a request to the server to book the availability
+      fetch(`http://localhost:3000/book/${availabilityId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          // Handle the response from the server
+          console.log(data); // You can customize this part based on your requirements
+
+          // Refresh the availability data
+          fetchAvailabilityData();
+        })
+        .catch(error => {
+          console.error('Error booking availability:', error);
+        });
+    }
+
+    // Fetch availability data when the page loads
+    window.addEventListener('DOMContentLoaded', fetchAvailabilityData);
+  </script>
+</body>
+</html>

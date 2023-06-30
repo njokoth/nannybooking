@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Availability Form</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    /* Styles for loading animation */
+    .loading {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+      background-color: rgba(255, 255, 255, 0.7);
+      padding: 20px;
+      text-align: center;
+      font-size: 24px;
+    }
+    .loading img {
+      width: 50px;
+      height: 50px;
+      margin-bottom: 10px;
+    }
+    /* Styles for success modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      text-align: center;
+      font-size: 24px;
+      animation: fadeOut 5s ease-in-out;
+    }
+    @keyframes fadeOut {
+      0% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { opacity: 0; display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="mt-5">Availability Form</h1>
+
+    <form>
+      <div class="mb-3">
+        <label for="date" class="form-label">Date:</label>
+        <input type="date" id="date" name="date" class="form-control" required>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col">
+          <label for="startTime" class="form-label">Start Time:</label>
+          <input type="time" id="startTime" name="startTime" class="form-control" required>
+        </div>
+        <div class="col">
+          <label for="endTime" class="form-label">End Time:</label>
+          <input type="time" id="endTime" name="endTime" class="form-control" required>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-primary" onclick="submitForm()">Submit</button>
+    </form>
+
+    <div id="loading" class="loading">
+      <img src="loading.gif" alt="Loading">
+      <p>Please wait...</p>
+    </div>
+
+    <div id="modal" class="modal">
+      <p>Your availability has been updated.</p>
+    </div>
+  </div>
+
+  <script>
+    // Submit form data and show success modal
+    function submitForm() {
+      var loading = document.getElementById("loading");
+      var modal = document.getElementById("modal");
+
+      // Display loading animation
+      loading.style.display = "block";
+
+      // Simulate a delay before showing the success modal (3 seconds)
+      setTimeout(function () {
+        loading.style.display = "none"; // Hide loading animation
+        modal.style.display = "block"; // Show success modal
+
+        // Automatically fade out the modal after 5 seconds
+        setTimeout(function () {
+          modal.style.opacity = "0";
+          setTimeout(function () {
+            modal.style.display = "none";
+          }, 1000);
+        }, 5000);
+
+        // Submit the form to the server
+        var date = document.getElementById("date").value;
+        var startTime = document.getElementById("startTime").value;
+        var endTime = document.getElementById("endTime").value;
+        var formData = {
+          date: date,
+          startTime: startTime,
+          endTime: endTime
+        };
+
+        fetch('http://localhost:3000/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData)
+        })
+          .then(function (response) {
+            if (response.ok) {
+              console.log('Form data submitted successfully');
+            } else {
+              console.error('An error occurred while submitting the form data');
+            }
+          })
+          .catch(function (error) {
+            console.error('An error occurred while submitting the form data', error);
+          });
+      }, 3000);
+    }
+
+  </script>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
